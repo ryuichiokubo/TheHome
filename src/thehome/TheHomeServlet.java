@@ -1,11 +1,9 @@
 package thehome;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -45,35 +43,21 @@ public class TheHomeServlet extends HttpServlet {
 		}
 
 		// parse RSS
-		String title = feed.getTitle();
-		List<String> articles = new ArrayList<String>();
+		String feedTitle = feed.getTitle();
+		List<HashMap<String, String>> articles = new ArrayList<HashMap<String, String>>();
 		for (Object obj : feed.getEntries()) {
 			SyndEntry entry = (SyndEntry) obj;
-			articles.add(entry.getTitle());
-			log.info(entry.getLink());
+			HashMap<String, String> content = new HashMap<String, String>(); // XXX TreeMap
+			content.put("title", entry.getTitle());
+			content.put("link", entry.getLink());
+			articles.add(content);
 		}
 		
-		/*
-		BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream(), "UTF-8"));
-		String line = "";
-		while ((line = reader.readLine()) != null) {
-			res += line;
-		}
-		*/
-		
-		// response
-		/*
-		resp.setContentType("text/plain");
-		resp.setCharacterEncoding("UTF-8");
-		resp.getWriter().println(title);
-		resp.getWriter().println(res);
-		*/
-
 		String tmpl = "/thehome.jsp";
 		ServletContext sc = getServletContext();
 		RequestDispatcher rd = sc.getRequestDispatcher(tmpl);
-		req.setAttribute("title", title );
-		req.setAttribute("articles", articles );
+		req.setAttribute("feedTitle", feedTitle);
+		req.setAttribute("articles", articles);
 		//req.setAttribute("links", links );
 		rd.forward(req, resp);
 	}
