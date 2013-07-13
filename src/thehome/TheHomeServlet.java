@@ -6,6 +6,7 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Logger;
 
 import javax.servlet.RequestDispatcher;
@@ -20,6 +21,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import com.google.appengine.api.ThreadManager;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
@@ -31,29 +33,6 @@ public class TheHomeServlet extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(TheHomeServlet.class.getName());
 	
-	// find link URL to article detail
-	// XXX run this in parallel
-	private String findDetailURL(String urlToParse) throws IOException {
-		if (urlToParse.startsWith("http://rd.yahoo.co.jp")) {
-			urlToParse = urlToParse.substring(urlToParse.indexOf("*")+1);
-		}
-		Document document = Jsoup.connect(urlToParse).timeout(1000*20).get(); // XXX parallel
-		Elements links = document.select("div#detailHeadline  a[href]");
-		String href = "";
-		ArrayList<String> tmpArr = new ArrayList<String>();
-		for (Element link : links) {
-			href = link.attr("href");
-			if (href.startsWith("http://headlines.yahoo.co.jp")) { // XXX got http://backnumber.dailynews.yahoo.co.jp/?m=7700474&e=food_service_industry
-				if (tmpArr.contains(href)) {
-					break;
-				} else {
-					tmpArr.add(href);
-				}
-			}
-		}
-		return href;
-	}
-
 	@SuppressWarnings("null")
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException {
@@ -63,7 +42,7 @@ public class TheHomeServlet extends HttpServlet {
 		// fetch data from URL
 		URL url = new URL("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
 		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(20000);
+		conn.setConnectTimeout(20000); // XXX constant
 		SyndFeedInput input = new SyndFeedInput();
 		SyndFeed feed = null;
 		try {
@@ -78,13 +57,30 @@ public class TheHomeServlet extends HttpServlet {
 
 		// parse RSS
 		String feedTitle = feed.getTitle();
+		
 		List<HashMap<String, String>> articles = new ArrayList<HashMap<String, String>>();
+		List<EntryParser> parsers = new ArrayList<EntryParser>();
+		List<Thread> threads = new ArrayList<Thread>();
+		ThreadFactory threadFactory = ThreadManager.currentRequestThreadFactory();
+		
 		for (Object obj : feed.getEntries()) {
 			SyndEntry entry = (SyndEntry) obj;
-			HashMap<String, String> content = new HashMap<String, String>(); // XXX TreeMap
-			content.put("title", entry.getTitle());
-			content.put("link", findDetailURL(entry.getLink()));
-			articles.add(content);
+			EntryParser parser = new EntryParser(entry);
+			Thread thread = threadFactory.newThread(parser);
+			thread.start();
+			threads.add(thread);
+			parsers.add(parser);
+		}
+		for (Thread thread: threads) {
+			try {
+				thread.join(); // XXX replace with notify or something to wait for threads execution smartly
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		for (EntryParser parser: parsers) {
+			articles.add(parser.getContents());
 		}
 		
 		String tmpl = "/thehome.jsp";
