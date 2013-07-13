@@ -2,6 +2,7 @@ package thehome;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -33,7 +34,10 @@ public class TheHomeServlet extends HttpServlet {
 	// find link URL to article detail
 	// XXX run this in parallel
 	private String findDetailURL(String urlToParse) throws IOException {
-		Document document = Jsoup.connect(urlToParse).get();
+		if (urlToParse.startsWith("http://rd.yahoo.co.jp")) {
+			urlToParse = urlToParse.substring(urlToParse.indexOf("*")+1);
+		}
+		Document document = Jsoup.connect(urlToParse).timeout(1000*20).get(); // XXX parallel
 		Elements links = document.select("div#detailHeadline  a[href]");
 		String href = "";
 		ArrayList<String> tmpArr = new ArrayList<String>();
@@ -58,10 +62,12 @@ public class TheHomeServlet extends HttpServlet {
 		
 		// fetch data from URL
 		URL url = new URL("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
+		URLConnection conn = url.openConnection();
+		conn.setConnectTimeout(20000);
 		SyndFeedInput input = new SyndFeedInput();
 		SyndFeed feed = null;
 		try {
-			feed = input.build(new XmlReader(url));
+			feed = input.build(new XmlReader(conn));
 		} catch (IllegalArgumentException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
