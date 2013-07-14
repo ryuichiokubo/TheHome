@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.TextNode;
 import org.jsoup.select.Elements;
 
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -27,7 +28,7 @@ public class EntryParser implements Runnable{
 	public void run() {
 		contents.put("title", entry.getTitle());
 		try {
-			contents.put("link", findDetailURL(entry.getLink()));
+			parseUrl(entry.getLink());
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -38,11 +39,28 @@ public class EntryParser implements Runnable{
 		return contents;
 	}
 		
-	private String findDetailURL(String urlToParse) throws IOException {
-		if (urlToParse.startsWith("http://rd.yahoo.co.jp")) {
-			urlToParse = urlToParse.substring(urlToParse.indexOf("*")+1);
+	private void parseUrl(String url) throws IOException {
+		if (url.startsWith("http://rd.yahoo.co.jp")) {
+			url = url.substring(url.indexOf("*")+1);
 		}
-		Document document = Jsoup.connect(urlToParse).timeout(1000*20).get(); // XXX constant
+		Document document = Jsoup.connect(url).timeout(1000*20).get(); // XXX constant
+		contents.put("link", findDetailUrl(document));
+		contents.put("summary", findSummary(document));
+	}
+	
+	private String findSummary(Document document) {
+		String summary = "";
+		for (TextNode node: document.select("div#detailHeadline").first().textNodes()) {
+			if (!node.isBlank()) {
+				summary += node.text();
+			}
+			if (summary.length() > 0) break;
+		}
+		
+		return summary;		
+	}
+
+	private String findDetailUrl(Document document) {
 		Elements links = document.select("div#detailHeadline  a[href]");
 		String href = "";
 		ArrayList<String> tmpArr = new ArrayList<String>();
@@ -56,6 +74,6 @@ public class EntryParser implements Runnable{
 				}
 			}
 		}
-		return href;
+		return href;		
 	}
 }

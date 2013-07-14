@@ -13,13 +13,13 @@
 	//out.println("---- start ----");
 
 	List<HashMap<String, String>> articles = (List<HashMap<String, String>>) request.getAttribute("articles");
-    for (HashMap<String, String> article : articles) {
-    	//application.log(article);
-    	    	
+    for (HashMap<String, String> article : articles) {    	    	
     	pageContext.setAttribute("title", article.get("title"));
     	String link = article.get("link");
+    	String summary = article.get("summary");
     	%>
     	<a href="<%= link %>">${fn:escapeXml(title)}</a><br />
+    	<%= summary %><br /><br />
     	<%
 	}
 	//out.println("---- end ----");
