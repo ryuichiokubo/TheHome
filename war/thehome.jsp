@@ -13,18 +13,26 @@
 	//out.println("---- start ----");
 
 	List<HashMap<String, String>> articles = (List<HashMap<String, String>>) request.getAttribute("articles");
-    for (HashMap<String, String> article : articles) {    	    	
-    	pageContext.setAttribute("title", article.get("title"));
+    for (HashMap<String, String> article : articles) {  
+    	String title = article.get("title");  	    	
+    	pageContext.setAttribute("title", title);
     	String link = article.get("link");
     	String summary = article.get("summary");
+    	String hash = article.get("hash");
+    	pageContext.setAttribute("title", title);
     	%>
     	<a href="<%= link %>">${fn:escapeXml(title)}</a><br />
-    	<%= summary %><br /><br />
+    	<%= summary %><br /><%= hash %><br />
     	<%
 	}
 	//out.println("---- end ----");
 %>
 
   </body>
+  <script>
+  	var hash = "<%=request.getAttribute("hash") %>";
+  	var title = "<%=request.getAttribute("title") %>";
+	localStorage.setItem(hash, title); // XXX {null: "null"}
+  </script>
 </html>
 

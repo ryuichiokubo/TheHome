@@ -27,6 +27,7 @@ public class EntryParser implements Runnable{
 	
 	public void run() {
 		contents.put("title", entry.getTitle());
+		contents.put("hash", Integer.toString(entry.hashCode()));
 		try {
 			parseUrl(entry.getLink());
 		} catch (IOException e) {
