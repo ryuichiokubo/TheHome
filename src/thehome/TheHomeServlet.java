@@ -6,20 +6,14 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Logger;
 
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 
 import com.google.appengine.api.ThreadManager;
 import com.sun.syndication.feed.synd.SyndEntry;
@@ -27,6 +21,13 @@ import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
+
+import freemarker.cache.WebappTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
 
 @SuppressWarnings("serial")
 public class TheHomeServlet extends HttpServlet {
@@ -38,7 +39,6 @@ public class TheHomeServlet extends HttpServlet {
 			throws IOException, ServletException {
 
 		// XXX exception handling
-		
 		// fetch data from URL
 		URL url = new URL("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
 		URLConnection conn = url.openConnection();
@@ -83,12 +83,26 @@ public class TheHomeServlet extends HttpServlet {
 			articles.add(parser.getContents());
 		}
 		
-		String tmpl = "/thehome.jsp";
-		ServletContext sc = getServletContext();
-		RequestDispatcher rd = sc.getRequestDispatcher(tmpl);
-		req.setAttribute("feedTitle", feedTitle);
-		req.setAttribute("articles", articles);
-		//req.setAttribute("links", links );
-		rd.forward(req, resp);
+		// XXX You should do this ONLY ONCE in the whole application life-cycle
+		Configuration cfg = new Configuration();
+		cfg.setTemplateLoader(new WebappTemplateLoader(this.getServletContext())); // !
+		cfg.setObjectWrapper(new DefaultObjectWrapper());
+		cfg.setDefaultEncoding("UTF-8");
+		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
+		
+		Map root = new HashMap();
+		root.put("feedTitle", feedTitle);
+		root.put("articles", articles);
+		log.info("@@@@@@@@@articles: " + articles.toString());
+		
+		Template temp = cfg.getTemplate("thehome.tmpl");
+	    
+		resp.setContentType("text/html");
+	    resp.setCharacterEncoding("utf-8");
+	    try {
+	       temp.process(root, resp.getWriter());
+	    } catch (TemplateException e) {
+	       resp.getWriter().println(e.getMessage());
+	    }
 	}
 }

@@ -1,0 +1,21 @@
+<html>
+
+  <script type="text/javascript">
+    /*
+  	var hash = "<%=pageContext.getAttribute("hash") %>"; // XXX want to get array
+  	var title = "<%=pageContext.getAttribute("title") %>";
+	localStorage.setItem(hash, title);
+	*/
+  </script>
+
+  <body>
+	  <p>${feedTitle}</p>
+	  <#list articles as article>
+	  	<a href=${article.link}>${article.title}</a>
+	  	<br />
+	  	${article.summary}
+	  	<br /><br />
+	  </#list>
+	  
+  </body>
+</html>

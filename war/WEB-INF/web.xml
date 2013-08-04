@@ -8,9 +8,9 @@
 		<url-pattern>/thehome</url-pattern>
 	</servlet-mapping>
 	<welcome-file-list>
-		<welcome-file>thehome.jsp</welcome-file>
+		<welcome-file>thehome.tmpl</welcome-file>
 	</welcome-file-list>
-	
+		
  <servlet>
   <servlet-name>SystemServiceServlet</servlet-name>
   <servlet-class>com.google.api.server.spi.SystemServiceServlet</servlet-class>

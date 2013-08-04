@@ -4,5 +4,6 @@
 *.jar
 *.war
 *.ear
+*.DS_Store
 
 war/WEB-INF/appengine-generated/
