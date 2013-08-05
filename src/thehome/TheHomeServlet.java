@@ -82,7 +82,7 @@ public class TheHomeServlet extends HttpServlet {
 		for (EntryParser parser: parsers) {
 			articles.add(parser.getContents());
 		}
-		
+
 		// XXX You should do this ONLY ONCE in the whole application life-cycle
 		Configuration cfg = new Configuration();
 		cfg.setTemplateLoader(new WebappTemplateLoader(this.getServletContext())); // !
@@ -93,7 +93,6 @@ public class TheHomeServlet extends HttpServlet {
 		Map root = new HashMap();
 		root.put("feedTitle", feedTitle);
 		root.put("articles", articles);
-		log.info("@@@@@@@@@articles: " + articles.toString());
 		
 		Template temp = cfg.getTemplate("thehome.tmpl");
 	    

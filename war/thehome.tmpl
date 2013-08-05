@@ -1,21 +1,27 @@
 <html>
+<head>
+<title>TheHome</title>
+</head>
 
-  <script type="text/javascript">
-    /*
-  	var hash = "<%=pageContext.getAttribute("hash") %>"; // XXX want to get array
-  	var title = "<%=pageContext.getAttribute("title") %>";
-	localStorage.setItem(hash, title);
-	*/
-  </script>
+<body>
+	<div id=contents></div>
 
-  <body>
-	  <p>${feedTitle}</p>
-	  <#list articles as article>
-	  	<a href=${article.link}>${article.title}</a>
-	  	<br />
-	  	${article.summary}
-	  	<br /><br />
-	  </#list>
-	  
-  </body>
+<script src="/jquery-2.0.3.js" type="text/javascript"></script>
+<script>
+$( document ).ready(function() {
+	$("#contents").append("<p>${feedTitle}</p>");
+	<#if articles??>
+		<#list articles as article>
+			var hash = "${article.hash}";
+			var title = "${article.title}";
+			localStorage.setItem(hash, title);
+			$("#contents").append("<a href=${article.link}>${article.title}</a>");
+			$("#contents").append("<br />");
+			$("#contents").append("${article.summary}");
+			$("#contents").append("<br /><br />");
+		</#list>
+	</#if>
+});
+</script>
+</body>
 </html>
