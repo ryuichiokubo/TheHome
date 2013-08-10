@@ -13,14 +13,39 @@ $( document ).ready(function() {
 	<#if articles??>
 		<#list articles as article>
 			var hash = "${article.hash}";
-			var title = "${article.title}";
-			localStorage.setItem(hash, title);
-			$("#contents").append("<a href=${article.link}>${article.title}</a>");
-			$("#contents").append("<br />");
-			$("#contents").append("${article.summary}");
-			$("#contents").append("<br /><br />");
+			var data = JSON.stringify({
+				title: "${article.title}",
+				summary: "${article.summary}",
+				link: "${article.link}",
+				time: "${article.time}"
+			});
+			localStorage.setItem(hash, data);
 		</#list>
 	</#if>
+
+	var item, obj;
+	var arr = [];
+	for( var i=0; i<localStorage.length; i++ ) {
+		item = localStorage.getItem(localStorage.key(i));
+		try {
+			obj = JSON.parse(item);
+		} catch(e) {
+			console.log("parse error: " + e);
+			// XXX next loop
+			// XXX check undefined obj
+		}
+		arr.push(obj);
+	}	
+	arr.sort(function(a, b){
+		return b - a;
+	});
+
+	arr.forEach(function(o) {
+		$("#contents").append("<a href=" + o.link + ">" + o.title + "</a>");
+		$("#contents").append("<br />");
+		$("#contents").append(o.summary);
+		$("#contents").append("<br /><br />");
+	});
 });
 </script>
 </body>

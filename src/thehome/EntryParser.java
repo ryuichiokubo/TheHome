@@ -2,6 +2,7 @@ package thehome;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
@@ -15,6 +16,7 @@ import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 
 public class EntryParser implements Runnable{
+	// XXX yahoo parser for now
 	
 	private static final Logger log = Logger.getLogger(TheHomeServlet.class.getName());
 	
@@ -28,6 +30,7 @@ public class EntryParser implements Runnable{
 	public void run() {
 		contents.put("title", entry.getTitle());
 		contents.put("hash", Integer.toString(entry.hashCode()));
+		contents.put("time", Long.toString((new Date()).getTime()));
 		try {
 			parseUrl(entry.getLink());
 		} catch (IOException e) {
