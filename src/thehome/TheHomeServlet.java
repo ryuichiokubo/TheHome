@@ -55,9 +55,7 @@ public class TheHomeServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 
-		// parse RSS
-		String feedTitle = feed.getTitle();
-		
+		// parse RSS		
 		List<HashMap<String, String>> articles = new ArrayList<HashMap<String, String>>();
 		List<EntryParser> parsers = new ArrayList<EntryParser>();
 		List<Thread> threads = new ArrayList<Thread>();
@@ -91,7 +89,6 @@ public class TheHomeServlet extends HttpServlet {
 		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
 		
 		Map root = new HashMap();
-		root.put("feedTitle", feedTitle);
 		root.put("articles", articles);
 		
 		Template temp = cfg.getTemplate("thehome.tmpl");

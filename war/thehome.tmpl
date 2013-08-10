@@ -1,15 +1,11 @@
 <html>
 <head>
 <title>TheHome</title>
-</head>
-
-<body>
-	<div id=contents></div>
-
-<script src="/jquery-2.0.3.js" type="text/javascript"></script>
+<link href="css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
+<script src="js/jquery-2.0.3.js"></script>
+<script src="js/jquery-ui-1.10.3.custom.js"></script>
 <script>
 $( document ).ready(function() {
-	$("#contents").append("<p>${feedTitle}</p>");
 	<#if articles??>
 		<#list articles as article>
 			var hash = "${article.hash}";
@@ -34,19 +30,47 @@ $( document ).ready(function() {
 			// XXX next loop
 			// XXX check undefined obj
 		}
+		obj.hash = localStorage.key(i);
 		arr.push(obj);
 	}	
 	arr.sort(function(a, b){
 		return b - a;
 	});
 
-	arr.forEach(function(o) {
-		$("#contents").append("<a href=" + o.link + ">" + o.title + "</a>");
-		$("#contents").append("<br />");
-		$("#contents").append(o.summary);
-		$("#contents").append("<br /><br />");
+	var prevId, position; 
+	var LIMIT = 50;
+	arr.forEach(function(o, i) {
+		if( i < LIMIT ) {
+			$("#contents").append('<div id="dialog' + o.hash + '" title="' + o.title + '">' + o.summary + "</div>");
+
+			if ( prevId ) {
+				position = {
+					my: 'center top+100',
+					of: "#" + prevId,
+					collision: 'fit none'
+				};
+			} else {
+				position = {
+					my: 'left+2% top+5%',
+					at: 'left+2% top+5%',
+					of: window,
+					collision: 'fit none'
+				};
+			}
+
+			$( "#dialog" + o.hash ).dialog({
+				minWidth: 700,
+				position: position,
+				resizable: false
+			});
+			prevId = "dialog" + o.hash;
+		}
 	});
 });
 </script>
+</head>
+
+<body>
+	<div id=contents></div>
 </body>
 </html>
