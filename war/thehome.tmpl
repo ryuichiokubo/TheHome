@@ -55,7 +55,7 @@ $( document ).ready(function() {
 
 			if ( prevId ) {
 				position = {
-					my: 'center top+110',
+					my: 'center top+190',
 					of: "#" + prevId,
 					collision: 'fit none'
 				};
@@ -68,16 +68,15 @@ $( document ).ready(function() {
 				};
 			}
 
-			closeFn = function(event, ui) {
-				o.hide = true;
-				localStorage.setItem(o.hash, JSON.stringify(o));
-			};
-
 			$( "#dialog" + o.hash ).dialog({
-				width: 700,
+				width: 900,
 				position: position,
 				resizable: false,
-				close: closeFn
+				buttons: [ { text: "Read more", click: function() { window.location = o.link; } } ],
+				close: function(event, ui) {
+					o.hide = true;
+					localStorage.setItem(o.hash, JSON.stringify(o));
+				}
 			});
 			prevId = "dialog" + o.hash;
 		}
