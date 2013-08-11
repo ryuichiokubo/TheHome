@@ -31,17 +31,18 @@ $( document ).ready(function() {
 			// XXX check undefined obj
 		}
 		obj.hash = localStorage.key(i);
+		obj.time = obj.time ? parseInt(obj.time, 10) : Date.now();
 		arr.push(obj);
 	}	
 	arr.sort(function(a, b){
-		return b - a;
+		return b.time - a.time;
 	});
 
 	var prevId, position; 
 	var LIMIT = 50;
 	arr.forEach(function(o, i) {
 		if( i < LIMIT ) {
-			$("#contents").append('<div id="dialog' + o.hash + '" title="' + o.title + '">' + o.summary + "</div>");
+			$("#contents").append('<div id="dialog' + o.hash + '" title="' + o.title + '">' + o.summary + "<br /><br />" + (new Date(o.time)).toLocaleString() + "</div>");
 
 			if ( prevId ) {
 				position = {
