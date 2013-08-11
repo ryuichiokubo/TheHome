@@ -15,7 +15,9 @@ $( document ).ready(function() {
 				link: "${article.link}",
 				time: "${article.time}"
 			});
-			localStorage.setItem(hash, data);
+			if (!localStorage.getItem(hash)) {
+				localStorage.setItem(hash, data);
+			}
 		</#list>
 	</#if>
 
@@ -32,6 +34,13 @@ $( document ).ready(function() {
 		}
 		obj.hash = localStorage.key(i);
 		obj.time = obj.time ? parseInt(obj.time, 10) : Date.now();
+
+		// remove hidden data which is old enough not to be in rss anymore
+		var TOO_OLD = 3 * 24 * 60 * 60 * 1000; // 3 day
+		if (obj.hide && obj.time < Date.now() - TOO_OLD ) {
+			localStorage.removeItem(localStorage.key(i));
+		}
+
 		arr.push(obj);
 	}	
 	arr.sort(function(a, b){
@@ -39,14 +48,14 @@ $( document ).ready(function() {
 	});
 
 	var prevId, position; 
-	var LIMIT = 50;
+	var LIMIT = 100;
 	arr.forEach(function(o, i) {
-		if( i < LIMIT ) {
+		if( i < LIMIT && !o.hide ) {
 			$("#contents").append('<div id="dialog' + o.hash + '" title="' + o.title + '">' + o.summary + "<br /><br />" + (new Date(o.time)).toLocaleString() + "</div>");
 
 			if ( prevId ) {
 				position = {
-					my: 'center top+100',
+					my: 'center top+110',
 					of: "#" + prevId,
 					collision: 'fit none'
 				};
@@ -59,10 +68,16 @@ $( document ).ready(function() {
 				};
 			}
 
+			closeFn = function(event, ui) {
+				o.hide = true;
+				localStorage.setItem(o.hash, JSON.stringify(o));
+			};
+
 			$( "#dialog" + o.hash ).dialog({
-				minWidth: 700,
+				width: 700,
 				position: position,
-				resizable: false
+				resizable: false,
+				close: closeFn
 			});
 			prevId = "dialog" + o.hash;
 		}
