@@ -1,6 +1,7 @@
 package thehome;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -33,16 +34,14 @@ import freemarker.template.TemplateExceptionHandler;
 public class TheHomeServlet extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(TheHomeServlet.class.getName());
+	private static final int CON_TIMEOUT = 30 * 1000;
 	
-	@SuppressWarnings("null")
-	public void doGet(HttpServletRequest req, HttpServletResponse resp)
-			throws IOException, ServletException {
-
-		// XXX exception handling
-		// fetch data from URL
-		URL url = new URL("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
+	private SyndFeed getFeedFromUrl(String urlStr) throws IOException {
+		log.info("Loading: " + urlStr);
+		
+		URL url = new URL(urlStr);
 		URLConnection conn = url.openConnection();
-		conn.setConnectTimeout(20000); // XXX constant
+		conn.setConnectTimeout(CON_TIMEOUT);
 		SyndFeedInput input = new SyndFeedInput();
 		SyndFeed feed = null;
 		try {
@@ -53,9 +52,11 @@ public class TheHomeServlet extends HttpServlet {
 		} catch (FeedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-
-		// parse RSS		
+		}	
+		return feed;
+	}
+	
+	private List<HashMap<String, String>> parseFeed(SyndFeed feed) {
 		List<HashMap<String, String>> articles = new ArrayList<HashMap<String, String>>();
 		List<EntryParser> parsers = new ArrayList<EntryParser>();
 		List<Thread> threads = new ArrayList<Thread>();
@@ -80,8 +81,12 @@ public class TheHomeServlet extends HttpServlet {
 		for (EntryParser parser: parsers) {
 			articles.add(parser.getContents());
 		}
-
-		// XXX You should do this ONLY ONCE in the whole application life-cycle
+		
+		return articles;
+	}
+	
+	private void setTemplateAndResponse(List<HashMap<String, String>>articles, String templName, HttpServletResponse resp) throws IOException {
+		// XXX You should do this config part ONLY ONCE in the whole application life-cycle
 		Configuration cfg = new Configuration();
 		cfg.setTemplateLoader(new WebappTemplateLoader(this.getServletContext())); // !
 		cfg.setObjectWrapper(new DefaultObjectWrapper());
@@ -99,6 +104,15 @@ public class TheHomeServlet extends HttpServlet {
 	       temp.process(root, resp.getWriter());
 	    } catch (TemplateException e) {
 	       resp.getWriter().println(e.getMessage());
-	    }
+	    }	
+	}
+	
+	@SuppressWarnings("null")
+	public void doGet(HttpServletRequest req, HttpServletResponse resp)
+			throws IOException, ServletException { // XXX exception handling
+		
+		SyndFeed feed = getFeedFromUrl("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
+		List<HashMap<String, String>> articles = parseFeed(feed);	
+		setTemplateAndResponse(articles, "thehome.tmpl", resp);
 	}
 }
