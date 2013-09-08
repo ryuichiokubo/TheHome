@@ -1,13 +1,11 @@
 package thehome;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadFactory;
 import java.util.logging.Logger;
 
@@ -17,20 +15,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.google.appengine.api.ThreadManager;
+import com.google.gson.Gson;
 import com.sun.syndication.feed.synd.SyndEntry;
 import com.sun.syndication.feed.synd.SyndFeed;
 import com.sun.syndication.io.FeedException;
 import com.sun.syndication.io.SyndFeedInput;
 import com.sun.syndication.io.XmlReader;
 
-import freemarker.cache.WebappTemplateLoader;
-import freemarker.template.Configuration;
-import freemarker.template.DefaultObjectWrapper;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateExceptionHandler;
-
-@SuppressWarnings("serial")
 public class TheHomeServlet extends HttpServlet {
 	
 	private static final Logger log = Logger.getLogger(TheHomeServlet.class.getName());
@@ -85,34 +76,20 @@ public class TheHomeServlet extends HttpServlet {
 		return articles;
 	}
 	
-	private void setTemplateAndResponse(List<HashMap<String, String>>articles, String templName, HttpServletResponse resp) throws IOException {
-		// XXX You should do this config part ONLY ONCE in the whole application life-cycle
-		Configuration cfg = new Configuration();
-		cfg.setTemplateLoader(new WebappTemplateLoader(this.getServletContext())); // !
-		cfg.setObjectWrapper(new DefaultObjectWrapper());
-		cfg.setDefaultEncoding("UTF-8");
-		cfg.setTemplateExceptionHandler(TemplateExceptionHandler.HTML_DEBUG_HANDLER);
-		
-		Map root = new HashMap();
-		root.put("articles", articles);
-		
-		Template temp = cfg.getTemplate("thehome.tmpl");
-	    
-		resp.setContentType("text/html");
-	    resp.setCharacterEncoding("utf-8");
-	    try {
-	       temp.process(root, resp.getWriter());
-	    } catch (TemplateException e) {
-	       resp.getWriter().println(e.getMessage());
-	    }	
+	private void sendResponse(List<HashMap<String, String>>articles, HttpServletResponse resp) throws IOException {		
+		Gson gson = new Gson();
+		String json = gson.toJson(articles);
+			    
+		resp.setContentType("application/json");
+		resp.setCharacterEncoding("utf-8");
+		resp.getWriter().write(json);
 	}
 	
-	@SuppressWarnings("null")
 	public void doGet(HttpServletRequest req, HttpServletResponse resp)
 			throws IOException, ServletException { // XXX exception handling
 		
 		SyndFeed feed = getFeedFromUrl("http://rss.dailynews.yahoo.co.jp/fc/rss.xml");
 		List<HashMap<String, String>> articles = parseFeed(feed);	
-		setTemplateAndResponse(articles, "thehome.tmpl", resp);
+		sendResponse(articles, resp);
 	}
 }

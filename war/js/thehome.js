@@ -1,26 +1,21 @@
-<html>
-<head>
-<title>TheHome</title>
-<link href="css/ui-lightness/jquery-ui-1.10.3.custom.css" rel="stylesheet">
-<script src="js/jquery-2.0.3.js"></script>
-<script src="js/jquery-ui-1.10.3.custom.js"></script>
-<script>
-$( document ).ready(function() {
-	<#if articles??>
-		<#list articles as article>
-			var hash = "${article.hash}";
+$(function() {
+	// get update and save in localStorage
+	$.get('http://localhost:8888/thehome', function(data) {
+		data.forEach(function(article) {
+			var hash = article.hash;
 			var data = JSON.stringify({
-				title: "${article.title}",
-				summary: "${article.summary}",
-				link: "${article.link}",
-				time: "${article.time}"
+				title: article.title,
+				summary: article.summary,
+				link: article.link,
+				time: article.time
 			});
 			if (!localStorage.getItem(hash)) {
 				localStorage.setItem(hash, data);
 			}
-		</#list>
-	</#if>
+		});
+	});
 
+	// read from localStorage
 	var item, obj;
 	var arr = [];
 	for( var i=0; i<localStorage.length; i++ ) {
@@ -47,6 +42,7 @@ $( document ).ready(function() {
 		return b.time - a.time;
 	});
 
+
 	var prevId, position; 
 	var LIMIT = 100;
 	arr.forEach(function(o, i) {
@@ -72,6 +68,7 @@ $( document ).ready(function() {
 				width: 900,
 				position: position,
 				resizable: false,
+				draggable: false,
 				buttons: [ { text: "Read more", click: function() { window.location = o.link; } } ],
 				close: function(event, ui) {
 					o.hide = true;
@@ -82,10 +79,3 @@ $( document ).ready(function() {
 		}
 	});
 });
-</script>
-</head>
-
-<body>
-	<div id=contents></div>
-</body>
-</html>
