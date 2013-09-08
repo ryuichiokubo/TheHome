@@ -1,23 +1,4 @@
-$(function() {
-	// get update and save in localStorage
-	//var CONTENTS_URL = 'http://localhost:8888/thehome';
-	var CONTENTS_URL = 'http://the-home.appspot.com/thehome';
-	$.get(CONTENTS_URL, function(data) {
-		data.forEach(function(article) {
-			var hash = article.hash;
-			var data = JSON.stringify({
-				title: article.title,
-				summary: article.summary,
-				link: article.link,
-				time: article.time
-			});
-			if (!localStorage.getItem(hash)) {
-				localStorage.setItem(hash, data);
-			}
-		});
-	});
-
-	// read from localStorage
+readFromStorage = function() {
 	var item, obj;
 	var arr = [];
 	for( var i=0; i<localStorage.length; i++ ) {
@@ -25,7 +6,6 @@ $(function() {
 		try {
 			obj = JSON.parse(item);
 		} catch(e) {
-			console.log("parse error: " + e);
 			// XXX next loop
 			// XXX check undefined obj
 		}
@@ -59,8 +39,8 @@ $(function() {
 				};
 			} else {
 				position = {
-					my: 'left+2% top+5%',
-					at: 'left+2% top+5%',
+					my: 'left+2% top+7%',
+					at: 'left+2% top+7%',
 					of: window,
 					collision: 'fit none'
 				};
@@ -80,4 +60,42 @@ $(function() {
 			prevId = "dialog" + o.hash;
 		}
 	});
+}
+
+$(function() {
+	// get update and save in localStorage
+	var CONTENTS_URL = 'http://localhost:8888/thehome'; // XXX check env
+	//var CONTENTS_URL = 'http://the-home.appspot.com/thehome';
+	$.get(CONTENTS_URL, function(data) {
+		flagNew = false;
+
+		// update localStorage
+		data.forEach(function(article) {
+			var hash = article.hash;
+			var data = JSON.stringify({
+				title: article.title,
+				summary: article.summary,
+				link: article.link,
+				time: article.time
+			});
+			if (!localStorage.getItem(hash)) {
+				localStorage.setItem(hash, data);
+				flagNew = true;
+			}
+		});
+
+		// update notice
+		if (flagNew === true) {
+			$("#notice").html("<button id='load'>Click to load new contents</button>");
+			$("#load").click(function() {
+				readFromStorage();
+				$("#notice").html("");
+			});
+			$("#load").button();
+		} else {
+			$("#notice").html("No new contents.");
+		}
+	});
+
+	readFromStorage();
 });
