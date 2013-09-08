@@ -1,0 +1,17 @@
+CACHE MANIFEST
+# v0.1.0
+
+# Explicitly cached 'master entries'.
+CACHE:
+index.html # cached implicitly anyway
+favicon.ico
+css/ui-lightness/jquery-ui-1.10.3.custom.css
+js/jquery-2.0.3.js
+js/jquery-ui-1.10.3.custom.js
+js/thehome.js
+
+# Resources that require the user to be online.
+NETWORK:
+*
+
+FALLBACK:
