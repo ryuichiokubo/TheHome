@@ -64,8 +64,8 @@ readFromStorage = function() {
 
 $(function() {
 	// get update and save in localStorage
-	var CONTENTS_URL = 'http://localhost:8888/thehome'; // XXX check env
-	//var CONTENTS_URL = 'http://the-home.appspot.com/thehome';
+	//var CONTENTS_URL = 'http://localhost:8888/thehome'; // XXX check env
+	var CONTENTS_URL = 'http://the-home.appspot.com/thehome';
 	$.get(CONTENTS_URL, function(data) {
 		flagNew = false;
 
