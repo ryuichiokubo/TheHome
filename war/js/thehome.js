@@ -1,6 +1,8 @@
 $(function() {
 	// get update and save in localStorage
-	$.get('http://localhost:8888/thehome', function(data) {
+	//var CONTENTS_URL = 'http://localhost:8888/thehome';
+	var CONTENTS_URL = 'http://the-home.appspot.com/thehome';
+	$.get(CONTENTS_URL, function(data) {
 		data.forEach(function(article) {
 			var hash = article.hash;
 			var data = JSON.stringify({
