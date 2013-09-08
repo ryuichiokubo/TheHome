@@ -88,6 +88,7 @@ $(function() {
 		if (flagNew === true) {
 			$("#notice").html("<button id='load'>Click to load new contents</button>");
 			$("#load").click(function() {
+				$("#contents").html("");
 				readFromStorage();
 				$("#notice").html("");
 			});
